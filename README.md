@@ -1,4 +1,4 @@
-[![Join the chat at https://gitter.im/Mitsubishi-Heat-Pump](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Mitsubishi-Heat-Pump?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+Support Chat here -> [![Join the chat at https://gitter.im/Mitsubishi-Heat-Pump](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Mitsubishi-Heat-Pump?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)  <-Support Chat here
 
 # HeatPump
 
@@ -52,6 +52,35 @@ void loop() {
 By default the library ignores changes made from other sources (usually, the IR remote) and reverts them the next time `sync()` is called. This is the intendend behavior when the heat pump is fully controlled by automation.
 
 If you want to also allow manual control and allow the library to update its settings from the current state of the heat pump you need to call `enableExternalUpdate()`. This will also enable automatic updates.
+
+### Support for installer settings/functions
+Important: This is only tested on PVA (P-Series air handler) units and is not known to work on any other models. 
+
+You can refer to page 6 of this document to see the generic list of functions: https://www.mitsubishitechinfo.ca/sites/default/files/Installation_Manual_69-2426-01_0.pdf. Note that what each setting does is model specific. For example, this document lists the available codes and values for PVAs: https://www.mitsubishitechinfo.ca/sites/default/files/IM_PVA_A12_42AA7_PA79D213H09.pdf, page 22.
+
+```c++
+heatpumpFunctions functions = hp.getFunctions();
+
+heatpumpFunctionCodes codes = functions.getAllCodes();
+for (int i = 0; i < MAX_FUNCTION_CODE_COUNT; ++i) {
+  if (codes.valid[i]) {
+    int code = codes.code[i];
+    int value = functions.getValue(code);
+    // handle value
+  }
+}
+
+
+if (!functions.setValue(code, value)) {
+  // handle error
+}
+
+if (!hp.setFunctions(functions)) {
+  // handle error
+}
+```
+
+It is recommended to call `getFunctions()` every time when you need to make a change to the values in order to get a fresh `heatpumpFunctions`. Otherwise you might accidentally write out stale values and overwrite changes that might have happened through other sources.
 
 ### Callbacks
 
@@ -121,7 +150,7 @@ You can see this in use in the [MQTT example](examples/mitsubishi_heatpump_mqtt_
 ### Other part suggestions
 
 - Premade pigtails
-    - <http://www.usastore.revolectrix.com/Products_2/Cellpro-4s-Charge-Adapters_2/Cellpro-JST-PA-Battery-Pigtail-10-5-Position>
+    - https://nl.aliexpress.com/item/1005003232354177.html select 5P option
 - ESP-01 module (4pk)
     - <https://www.amazon.com/gp/product/B01EA3UJJ4/>
 - Cheap 5V to 3.3V regulator (10pk), for those that don't want to make one
